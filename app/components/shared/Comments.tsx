@@ -10,13 +10,13 @@ export default function Comments() {
     theme.theme === "light"
       ? "light"
       : theme.theme === "dark"
-      ? "transparent_dark"
-      : "dark";
+        ? "transparent_dark"
+        : "dark";
 
   return (
     <Giscus
       id="comments"
-      repo="evavic44/victoreke.com"
+      repo="samcuxx/samcux.com"
       repoId={giscusRepoId}
       category="Announcements"
       categoryId={giscusCategoryId}
