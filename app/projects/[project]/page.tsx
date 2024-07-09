@@ -16,7 +16,7 @@ type Props = {
 };
 
 const fallbackImage: string =
-  "https://res.cloudinary.com/victoreke/image/upload/v1692636087/victoreke/projects.png";
+  "https://res.cloudinary.com/samuelamoah/image/upload/v1697976798/Samuel%20Amoah/carcf7uwbsmlmmubcuo4.jpg";
 
 // Dynamic metadata for SEO
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -29,13 +29,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${project.name} | Project`,
-    metadataBase: new URL(`https://victoreke.com/projects/${project.slug}`),
+    metadataBase: new URL(
+      `https://samcuxx.vercel.app/projects/${project.slug}`
+    ),
     description: project.tagline,
     openGraph: {
       images: project.coverImage
         ? urlFor(project.coverImage.image).width(1200).height(630).url()
         : fallbackImage,
-      url: `https://victoreke.com/projects/${project.slug}`,
+      url: `https://samcuxx.vercel.app/projects/${project.slug}`,
       title: project.name,
       description: project.tagline,
     },
@@ -51,11 +53,11 @@ export default async function Project({ params }: Props) {
   });
 
   return (
-    <main className="max-w-6xl mx-auto lg:px-16 px-8">
+    <main className="max-w-6xl px-8 mx-auto lg:px-16">
       <Slide>
         <div className="max-w-3xl mx-auto">
-          <div className="flex items-start justify-between flex-wrap mb-4">
-            <h1 className="font-incognito font-black tracking-tight sm:text-5xl text-3xl mb-4 max-w-md">
+          <div className="flex flex-wrap items-start justify-between mb-4">
+            <h1 className="max-w-md mb-4 text-3xl font-black tracking-tight font-incognito sm:text-5xl">
               {project.name}
             </h1>
 
@@ -92,7 +94,7 @@ export default async function Project({ params }: Props) {
 
           <div className="relative w-full h-40 pt-[52.5%]">
             <Image
-              className="rounded-xl border dark:border-zinc-800 border-zinc-100 object-cover"
+              className="object-cover border rounded-xl dark:border-zinc-800 border-zinc-100"
               fill
               src={project.coverImage?.image ?? fallbackImage}
               alt={project.coverImage?.alt ?? project.name}
@@ -102,7 +104,7 @@ export default async function Project({ params }: Props) {
             />
           </div>
 
-          <div className="mt-8 dark:text-zinc-400 text-zinc-600 leading-relaxed">
+          <div className="mt-8 leading-relaxed dark:text-zinc-400 text-zinc-600">
             <PortableText
               value={project.description}
               components={CustomPortableText}

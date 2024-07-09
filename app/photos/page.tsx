@@ -6,34 +6,34 @@ import PageHeading from "@/app/components/shared/PageHeading";
 const images = [
   {
     id: "1",
-    src: "https://images.unsplash.com/photo-1585618256754-241cfe4e8113?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=100",
+    src: "https://images.unsplash.com/photo-1618385772346-943ce2f53f09?auto=format&fit=crop&q=80&w=1964&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     id: "2",
-    src: "https://images.unsplash.com/photo-1585619203238-70e7631cc672?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwcm9maWxlLXBhZ2V8OXx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=60",
+    src: "https://images.unsplash.com/photo-1565172265978-aaa872e3f618?auto=format&fit=crop&q=80&w=1854&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     id: "3",
-    src: "https://images.unsplash.com/photo-1585619443911-c2bb23fb2a49?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80",
+    src: "https://images.unsplash.com/photo-1611096002616-763f16ef15f3?auto=format&fit=crop&q=80&w=1888&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
 ];
 
 export const metadata: Metadata = {
-  title: "Photos | Victor Eke",
-  metadataBase: new URL("https://victoreke.com/photos"),
-  description: "Explore photos taken by Victor Eke",
+  title: "Photos | SamCux",
+  metadataBase: new URL("https://samcuxx.vercel.app/photos"),
+  description: "Explore photos taken by SamCux",
   openGraph: {
-    title: "Photos | Victor Eke",
-    url: "https://victoreke.com/photos",
-    description: "Explore photos taken by Victor Eke",
+    title: "Photos | SamCux",
+    url: "https://samcuxx.vercel.app/photos",
+    description: "Explore photos taken by SamCux",
     images:
-      "https://res.cloudinary.com/victoreke/image/upload/v1692635149/victoreke/photos.png",
+      "https://res.cloudinary.com/samuelamoah/image/upload/v1697975913/Samuel%20Amoah/ueccqo5ha4opguuxvcwp.jpg",
   },
 };
 
 export default function Photos() {
   return (
-    <main className="max-w-7xl mx-auto md:px-16 px-6 lg:mt-32 mt-20">
+    <main className="px-6 mx-auto mt-20 max-w-7xl md:px-16 lg:mt-32">
       <PageHeading
         title="Photos"
         description="This page is still under construction..."
