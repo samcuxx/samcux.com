@@ -1,10 +1,10 @@
 <div align="center">
-<a href="https://victoreke.com"><img src="./public/logo.png" width="60px"></a>
+<a href="https://samuelamoah.com"><img src="./public/logo.png" width="60px"></a>
 </div>
 
 <div align="center">
-<h1>victoreke.com</h1>
-<p>My personal portfolio website</p>
+<h1>samuelamoah.com</h1>
+<p>My personal portfolio/blog website</p>
 </div>
 
 # Tech Stack
@@ -14,6 +14,7 @@
 - [Sanity.io][sanity]: Headless CMS and Content Lake
 - [TailwindCSS][tailwind] / CSS - Styling and UI
 - [Umami][umami]: Analytics
+- [PlanetScale][planetscale]: Database Storage for Analytics
 - [Next Themes][nexttheme]: Color Theme
 - [React Refractor][reactrefractor]: Syntax Highlighting
 
@@ -30,18 +31,18 @@ Follow this guide to get this site runnning locally:
 ### Clone Repository
 
 ```js
-git clone https://github.com/samcuxx/samcux.com.git
+git clone https://github.com/samcuxx/samcuxx.com.git
 
-cd victoreke.com
+cd samcuxx.com
 
 npm install
 ```
 
-- Rename [`.env.example`][env-example] to `.env.local`
+- Rename [`.env.example`][env-example] to `.env`
 
 ### Get Env variables
 
-The minimal `env` variables required to boot this project locally includes:
+The secrets variables required to boot this project locally includes:
 
 - `Project Id`
 - `Dataset`
@@ -55,7 +56,7 @@ These variables come from Sanity. To get them, you need to setup your own Sanity
 Run the command below in a terminal to create a new Sanity project:
 
 ```js
-npm create sanity@latest -- --template clean --create-project "John Doe" --dataset production
+npm create sanity@latest -- --template clean --create-project "Samuel Amoah" --dataset production
 ```
 
 - **Create an account**: If you already have a Sanity account, this will automatically connect to it, if not, select a login provider from the list of options, hit `Enter` and follow the prompt to create one.
@@ -65,7 +66,7 @@ npm create sanity@latest -- --template clean --create-project "John Doe" --datas
 Once completed open up the studio directory.
 
 ```js
-cd john-doe
+cd samuel-amoah
 
 code .
 ```
@@ -81,8 +82,8 @@ Open up the cloned repository and do the following:
 - Set `NEXT_PUBLIC_SANITY_API_VERSION` to your current date in **YYYY-MM-DD** format or leave as is
 - If you want to use an access token, visit [sanity.io/manage][sanity-manage] > **project name** > **API** > **Token** to create one. Once generated, copy the token and set it to `NEXT_PUBLIC_SANITY_ACCESS_TOKEN`.
 
-> [!Warning]
-> If you don't want to use a token, comment it out in the [env.api.ts][env-api] file or else it will throw errors.
+> **Warning**
+> If you don't want to use a token, comment it out in the [sanity.api.ts][sanity-api] file or else it will throw errors.
 
 - Now run `npm run dev` and you can visit [http://localhost:3000][localhost] to see the project live.
 
@@ -110,10 +111,6 @@ npm run build
 | [`schemas`](./schemas)                         | Where Sanity Studio gets its content types from |
 | [`sanity.query.ts`](./lib/sanity.query.ts)     | Groq query for Sanity Schema data               |
 
-## License & Usage
-
-This portfolio is MIT-licensed so you are free to use it as an inspiration or you can just copy the whole thing (excluding my personal content of course), I don't really mind. Just make sure you link back to [victoreke.com][site] on the footer section as attribution to the original source.
-
 <!-- Link Refs -->
 
 [nextjs]: https://nextjs.org
@@ -124,13 +121,13 @@ This portfolio is MIT-licensed so you are free to use it as an inspiration or yo
 [planetscale]: https://planetscale.com/
 [nexttheme]: https://github.com/pacocoursey/next-themes
 [reactrefractor]: https://github.com/rexxars/react-refractor
-[site]: https://victoreke.com
-[studio]: https://victoreke.com/studio
-[studio-preview]: https://github.com/samcuxx/samcux.com/assets/62628408/a2574479-a352-4437-ba67-14bd976e48eb
-[site-preview]: https://github.com/samcuxx/samcux.com/assets/62628408/e84ac72f-1ba1-4c46-bfc0-2512ffa0e5fa
-[env-example]: https://github.com/samcuxx/samcux.com/blob/main/.env.example
+[site]: https://samcuxx.vercel.app/
+[studio]: https://samcuxx.vercel.app/studio
+[studio-preview]: ./public/studio.png
+[site-preview]: ./public/site.png
+[env-example]: ./env.example
 [localhost]: http://localhost:3000
 [localhost-studio]: http://localhost:3000/studio
-[env-api]: https://github.com/samcuxx/samcux.com/blob/main/lib/env.api.ts
+[sanity-api]: https://github.com/samcuxx/samcuxx.com/blob/main/lib/sanity.api.ts
 [sanity-manage]: https://sanity.io/manage
 [sanity-guide]: https://www.freecodecamp.org/news/how-to-build-a-portfolio-site-with-sanity-and-nextjs
