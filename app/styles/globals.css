@@ -34,3 +34,18 @@ h4 {
     stroke-dashoffset: 12433.8193359375;
   }
 }
+
+
+
+
+/* Homie */
+/* Background Colors Start */
+.blurb {
+  @apply z-[-1] w-2/5 h-80 blur-[15rem] bg-[linear-gradient(30deg,#47f9f3,#1cff42)] absolute;
+}
+.blurb-1 {
+  @apply z-[-1] w-[10%] h-40 blur-[7rem] bg-[linear-gradient(30deg,#47f9f3,#1cff42)] absolute;
+}
+.blurb-footer {
+  @apply z-[-1] w-[30%] h-80 blur-[50rem] bg-[linear-gradient(30deg,#47f9f3,#1cff42)] absolute bottom-2/4;
+}
