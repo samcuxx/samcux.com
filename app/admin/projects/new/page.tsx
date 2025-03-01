@@ -93,6 +93,9 @@ export default function NewProjectPage() {
         ...formData,
         order: 0,
       });
+      
+      // Use projectId in a console log for debugging
+      console.log(`Created project with ID: ${projectId}`);
 
       router.push("/admin/projects");
     } catch (err) {

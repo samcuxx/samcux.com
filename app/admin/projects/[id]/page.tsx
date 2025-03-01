@@ -13,11 +13,10 @@ import { ImageUpload } from "@/components/ui/image-upload";
 export default function EditProjectPage({
   params,
 }: {
-  params: Promise<{ id: string }> | { id: string };
+  params: { id: string };
 }) {
   const router = useRouter();
-  const unwrappedParams = React.use(params);
-  const projectId = unwrappedParams.id as Id<"projects">;
+  const projectId = params.id as Id<"projects">;
 
   const project = useQuery(api.projects.getById, { id: projectId });
   const updateProject = useMutation(api.projects.update);
@@ -450,7 +449,7 @@ export default function EditProjectPage({
           <div className="bg-background p-6 rounded-lg max-w-md w-full">
             <h3 className="text-xl font-bold mb-4">Delete Project</h3>
             <p className="mb-6">
-              Are you sure you want to delete "{project.title}"? This action
+              Are you sure you want to delete &quot;{project.title}&quot;? This action
               cannot be undone.
             </p>
             <div className="flex justify-end gap-4">

@@ -20,7 +20,7 @@ export const ourFileRouter = {
         projectSlug,
       };
     })
-    .onUploadComplete(async ({ metadata, file }) => {
+    .onUploadComplete(async ({ file }) => {
       // Use the correct URL property based on UploadThing version
       const fileUrl = file.ufsUrl || file.url;
 
@@ -47,7 +47,7 @@ export const ourFileRouter = {
         projectSlug,
       };
     })
-    .onUploadComplete(async ({ metadata, file }) => {
+    .onUploadComplete(async ({ file }) => {
       // Use the correct URL property based on UploadThing version
       const fileUrl = file.ufsUrl || file.url;
 
@@ -65,12 +65,12 @@ export const ourFileRouter = {
       maxFileCount: 1,
     },
   })
-    .middleware(async ({ req }) => {
+    .middleware(async () => {
       return {
         userId: "admin",
       };
     })
-    .onUploadComplete(async ({ metadata, file }) => {
+    .onUploadComplete(async ({ file }) => {
       // Use the correct URL property based on UploadThing version
       const fileUrl = file.ufsUrl || file.url;
 

@@ -28,7 +28,7 @@ export default function ProjectsPage() {
       <h1 className="text-4xl font-bold mb-4">Projects</h1>
       <p className="text-xl text-muted-foreground mb-12 max-w-2xl">
         Explore my portfolio of projects. Each project showcases different
-        skills and technologies I've worked with.
+        skills and technologies I&apos;ve worked with.
       </p>
 
       {/* Technology filter */}

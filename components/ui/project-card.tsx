@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { ExternalLink, Github } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { useRouter } from "next/navigation";
