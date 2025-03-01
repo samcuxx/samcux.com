@@ -11,45 +11,26 @@ export function cn(...inputs: ClassValue[]) {
 /**
  * Format a date string or timestamp to a human-readable format
  */
-export function formatDate(date: string | number): string {
-  const dateObj = typeof date === "string" ? new Date(date) : new Date(date);
-
-  // Check if the date is valid
-  if (isNaN(dateObj.getTime())) {
-    return "Invalid date";
-  }
-
-  // Format options
-  const options: Intl.DateTimeFormatOptions = {
-    year: "numeric",
-    month: "long",
+export function formatDate(date: string | number | Date): string {
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
     day: "numeric",
-  };
-
-  return dateObj.toLocaleDateString("en-US", options);
+    year: "numeric",
+  });
 }
 
 /**
  * Format a date with time
  */
-export function formatDateTime(date: string | number): string {
-  const dateObj = typeof date === "string" ? new Date(date) : new Date(date);
-
-  // Check if the date is valid
-  if (isNaN(dateObj.getTime())) {
-    return "Invalid date";
-  }
-
-  // Format options
-  const options: Intl.DateTimeFormatOptions = {
-    year: "numeric",
-    month: "long",
+export function formatDateTime(date: string | number | Date): string {
+  return new Date(date).toLocaleString("en-US", {
+    month: "short",
     day: "numeric",
-    hour: "2-digit",
+    year: "numeric",
+    hour: "numeric",
     minute: "2-digit",
-  };
-
-  return dateObj.toLocaleDateString("en-US", options);
+    hour12: true,
+  });
 }
 
 /**
@@ -102,18 +83,18 @@ export function slugify(text: string): string {
     .toString()
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, "-") // Replace spaces with -
-    .replace(/&/g, "-and-") // Replace & with 'and'
-    .replace(/[^\w\-]+/g, "") // Remove all non-word characters
-    .replace(/\-\-+/g, "-"); // Replace multiple - with single -
+    .replace(/\s+/g, "-")        // Replace spaces with -
+    .replace(/&/g, "-and-")      // Replace & with 'and'
+    .replace(/[^\w\-]+/g, "")    // Remove all non-word characters
+    .replace(/\-\-+/g, "-");     // Replace multiple - with single -
 }
 
 /**
  * Truncates a string to a specified length
  */
-export function truncateText(text: string, length: number): string {
-  if (text.length <= length) return text;
-  return text.slice(0, length) + "...";
+export function truncate(str: string, length: number): string {
+  if (!str) return "";
+  return str.length > length ? `${str.substring(0, length)}...` : str;
 }
 
 /**

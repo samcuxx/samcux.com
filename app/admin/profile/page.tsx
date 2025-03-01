@@ -1,46 +1,76 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useRouter } from "next/navigation";
+import { PageHeader } from "@/components/admin/page-header";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Save,
-  Loader2,
-  User,
-  Mail,
-  Github,
-  Twitter,
-  Linkedin,
-  FileText,
-} from "lucide-react";
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/use-toast";
+import { Loader2, Plus, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "@/components/ui/image-upload";
 
+// Schema matches exactly with the Convex schema fields
+const profileFormSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  title: z.string().min(1, "Professional title is required"),
+  bio: z.string().min(10, "Bio should be at least 10 characters"),
+  avatar: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  email: z.string().email("Must be a valid email"),
+  github: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  twitter: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  linkedin: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  resume: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+});
+
+type ProfileFormValues = z.infer<typeof profileFormSchema>;
+
 export default function ProfilePage() {
-  const router = useRouter();
+  const { toast } = useToast();
   const profile = useQuery(api.profile.get);
   const updateProfile = useMutation(api.profile.upsert);
+  const addSkill = useMutation(api.profile.addSkill);
+  const removeSkill = useMutation(api.profile.removeSkill);
+  
+  const [newSkill, setNewSkill] = useState("");
+  const [isAddingSkill, setIsAddingSkill] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    title: "",
-    bio: "",
-    avatar: "",
-    email: "",
-    github: "",
-    twitter: "",
-    linkedin: "",
-    resume: "",
-    skills: [] as string[],
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileFormSchema),
+    defaultValues: {
+      name: "",
+      title: "",
+      bio: "",
+      avatar: "",
+      email: "",
+      github: "",
+      twitter: "",
+      linkedin: "",
+      resume: "",
+    },
   });
 
-  const [skillInput, setSkillInput] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-
+  // Load existing profile data
   useEffect(() => {
     if (profile) {
-      setFormData({
+      form.reset({
         name: profile.name || "",
         title: profile.title || "",
         bio: profile.bio || "",
@@ -50,421 +80,354 @@ export default function ProfilePage() {
         twitter: profile.twitter || "",
         linkedin: profile.linkedin || "",
         resume: profile.resume || "",
-        skills: profile.skills || [],
       });
     }
-  }, [profile]);
+  }, [profile, form]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleAddSkill = () => {
-    if (skillInput.trim() && !formData.skills.includes(skillInput.trim())) {
-      setFormData((prev) => ({
-        ...prev,
-        skills: [...prev.skills, skillInput.trim()],
-      }));
-      setSkillInput("");
-    }
-  };
-
-  const handleRemoveSkill = (skill: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      skills: prev.skills.filter((s) => s !== skill),
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setSuccessMessage("");
-
+  async function onSubmit(data: ProfileFormValues) {
     try {
-      await updateProfile(formData);
-      setSuccessMessage("Profile updated successfully!");
-      setTimeout(() => {
-        setSuccessMessage("");
-      }, 3000);
+      setIsSaving(true);
+      
+      // Include skills from the existing profile and ensure required fields have default values
+      const updatedData = {
+        ...data,
+        skills: profile?.skills || [],
+        avatar: data.avatar || "", // Ensure avatar is always a string
+        github: data.github || "",
+        twitter: data.twitter || "",
+        linkedin: data.linkedin || "",
+      };
+      
+      await updateProfile(updatedData);
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully updated.",
+      });
     } catch (error) {
       console.error("Error updating profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
     } finally {
-      setIsSubmitting(false);
+      setIsSaving(false);
     }
-  };
+  }
+
+  async function handleAddSkill() {
+    if (!newSkill.trim() || !profile) return;
+    
+    try {
+      setIsAddingSkill(true);
+      await addSkill({
+        id: profile._id,
+        skill: newSkill.trim()
+      });
+      setNewSkill("");
+      toast({
+        title: "Skill added",
+        description: `"${newSkill.trim()}" has been added to your skills.`,
+      });
+    } catch (error) {
+      console.error("Error adding skill:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add skill. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAddingSkill(false);
+    }
+  }
+
+  async function handleRemoveSkill(skill: string) {
+    if (!profile) return;
+    
+    try {
+      await removeSkill({
+        id: profile._id,
+        skill
+      });
+      toast({
+        title: "Skill removed",
+        description: `"${skill}" has been removed from your skills.`,
+      });
+    } catch (error) {
+      console.error("Error removing skill:", error);
+      toast({
+        title: "Error",
+        description: "Failed to remove skill. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }
 
   return (
-    <div className="max-w-7xl mx-auto py-12">
-      <h1 className="text-4xl font-bold mb-8">Edit Profile</h1>
+    <div className="space-y-6">
+      <PageHeader
+        title="Profile"
+        description="Manage your personal and professional information"
+      />
 
-      {profile === undefined ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <form
-              onSubmit={handleSubmit}
-              className="space-y-8 bg-card p-6 rounded-lg shadow-sm border"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <label
-                      htmlFor="name"
-                      className="block text-sm font-medium mb-1"
-                    >
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
+      <Tabs defaultValue="basic" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="basic">Basic Info</TabsTrigger>
+          <TabsTrigger value="skills">Skills</TabsTrigger>
+          <TabsTrigger value="social">Social Links</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="basic">
+          <Card>
+            <CardHeader>
+              <CardTitle>Basic Information</CardTitle>
+              <CardDescription>
+                Update your personal and professional details
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
                       name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent bg-background"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="John Doe" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
 
-                  <div>
-                    <label
-                      htmlFor="title"
-                      className="block text-sm font-medium mb-1"
-                    >
-                      Professional Title
-                    </label>
-                    <input
-                      type="text"
-                      id="title"
+                    <FormField
+                      control={form.control}
                       name="title"
-                      value={formData.title}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent bg-background"
-                      placeholder="e.g. Full Stack Developer"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Professional Title</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Full Stack Developer" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
 
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-medium mb-1"
-                    >
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
+                    <FormField
+                      control={form.control}
                       name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent bg-background"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input type="email" placeholder="john@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Profile Avatar
-                    </label>
-                    <ImageUpload
-                      value={formData.avatar ? [formData.avatar] : []}
-                      onChange={(urls) => {
-                        if (urls.length > 0) {
-                          setFormData((prev) => ({ ...prev, avatar: urls[0] }));
-                        }
-                      }}
-                      onRemove={() => {
-                        setFormData((prev) => ({ ...prev, avatar: "" }));
-                      }}
-                      endpoint="profileAvatar"
-                      projectSlug="profile"
-                    />
-                    {!formData.avatar && (
-                      <p className="text-xs text-red-500 mt-1">
-                        A profile avatar is required
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="resume"
-                      className="block text-sm font-medium mb-1"
-                    >
-                      Resume URL (Optional)
-                    </label>
-                    <input
-                      type="url"
-                      id="resume"
+                    <FormField
+                      control={form.control}
                       name="resume"
-                      value={formData.resume}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent bg-background"
-                      placeholder="https://example.com/resume.pdf"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Resume URL</FormLabel>
+                          <FormControl>
+                            <Input placeholder="https://example.com/resume.pdf" {...field} value={field.value || ""} />
+                          </FormControl>
+                          <FormDescription>
+                            Link to your resume or CV
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </div>
-                </div>
 
-                <div className="space-y-4">
-                  <div>
-                    <label
-                      htmlFor="bio"
-                      className="block text-sm font-medium mb-1"
-                    >
-                      Bio
-                    </label>
-                    <textarea
-                      id="bio"
-                      name="bio"
-                      value={formData.bio}
-                      onChange={handleChange}
-                      required
-                      rows={5}
-                      className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent bg-background"
-                      placeholder="Write a short bio about yourself..."
-                    ></textarea>
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="github"
-                      className="block text-sm font-medium mb-1"
-                    >
-                      GitHub URL
-                    </label>
-                    <input
-                      type="url"
-                      id="github"
-                      name="github"
-                      value={formData.github}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent bg-background"
-                      placeholder="https://github.com/yourusername"
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="twitter"
-                      className="block text-sm font-medium mb-1"
-                    >
-                      Twitter URL
-                    </label>
-                    <input
-                      type="url"
-                      id="twitter"
-                      name="twitter"
-                      value={formData.twitter}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent bg-background"
-                      placeholder="https://twitter.com/yourusername"
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="linkedin"
-                      className="block text-sm font-medium mb-1"
-                    >
-                      LinkedIn URL
-                    </label>
-                    <input
-                      type="url"
-                      id="linkedin"
-                      name="linkedin"
-                      value={formData.linkedin}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent bg-background"
-                      placeholder="https://linkedin.com/in/yourusername"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Skills</label>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {formData.skills.map((skill) => (
-                    <div
-                      key={skill}
-                      className="bg-primary/10 text-primary px-3 py-1 rounded-full flex items-center gap-1"
-                    >
-                      <span>{skill}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveSkill(skill)}
-                        className="text-primary/70 hover:text-primary"
-                      >
-                        &times;
-                      </button>
+                    <div className="col-span-1 md:col-span-2">
+                      <FormField
+                        control={form.control}
+                        name="avatar"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Profile Avatar</FormLabel>
+                            <FormControl>
+                              <ImageUpload
+                                value={field.value ? [field.value] : []}
+                                onChange={(url) => field.onChange(url[0])}
+                                onRemove={() => field.onChange("")}
+                                endpoint="profileAvatar"
+                                projectSlug="profile"
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Upload a profile picture (recommended size: 400x400)
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
-                  ))}
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="bio"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Bio</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Tell us about yourself and your experience..." 
+                            className="min-h-32" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          A brief description about yourself and your professional background
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <Button type="submit" disabled={isSaving}>
+                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isSaving ? "Saving..." : "Save Changes"}
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="skills">
+          <Card>
+            <CardHeader>
+              <CardTitle>Skills</CardTitle>
+              <CardDescription>
+                Add or remove skills to showcase your expertise
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="flex flex-wrap gap-2">
+                  {!profile?.skills || profile.skills.length === 0 ? (
+                    <p className="text-muted-foreground text-sm">No skills added yet. Add some skills below.</p>
+                  ) : (
+                    profile.skills.map((skill) => (
+                      <Badge key={skill} variant="secondary" className="px-3 py-1 text-sm">
+                        {skill}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-4 w-4 ml-1 hover:bg-transparent"
+                          onClick={() => handleRemoveSkill(skill)}
+                        >
+                          <X className="h-3 w-3" />
+                          <span className="sr-only">Remove {skill}</span>
+                        </Button>
+                      </Badge>
+                    ))
+                  )}
                 </div>
+
                 <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={skillInput}
-                    onChange={(e) => setSkillInput(e.target.value)}
-                    className="flex-1 px-4 py-2 border rounded-md focus:ring-2 focus:ring-primary focus:border-transparent bg-background"
-                    placeholder="Add a skill (e.g. React, Node.js, TypeScript)"
+                  <Input
+                    placeholder="Add a new skill..."
+                    value={newSkill}
+                    onChange={(e) => setNewSkill(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                      if (e.key === 'Enter') {
                         e.preventDefault();
                         handleAddSkill();
                       }
                     }}
                   />
-                  <button
-                    type="button"
-                    onClick={handleAddSkill}
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-                  >
+                  <Button onClick={handleAddSkill} disabled={isAddingSkill || !newSkill.trim() || !profile}>
+                    {isAddingSkill ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Plus className="h-4 w-4 mr-1" />
+                    )}
                     Add
-                  </button>
+                  </Button>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-              <div className="flex justify-between items-center pt-4">
-                <div>
-                  {successMessage && (
-                    <p className="text-green-600 dark:text-green-400">
-                      {successMessage}
-                    </p>
-                  )}
-                </div>
-                <div className="flex gap-4">
-                  <button
-                    type="button"
-                    onClick={() => router.push("/admin")}
-                    className="px-6 py-2 border rounded-md hover:bg-muted"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 flex items-center gap-2"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Saving...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Save className="h-4 w-4" />
-                        <span>Save Profile</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-
-          {/* Profile Preview */}
-          <div className="lg:col-span-1">
-            <div className="bg-card p-6 rounded-lg shadow-sm border">
-              <h2 className="text-xl font-semibold mb-4">Profile Preview</h2>
-              <div className="space-y-6">
-                <div className="flex flex-col items-center">
-                  {formData.avatar ? (
-                    <img
-                      src={formData.avatar}
-                      alt={formData.name}
-                      className="w-32 h-32 rounded-full object-cover border-4 border-primary/10"
+        <TabsContent value="social">
+          <Card>
+            <CardHeader>
+              <CardTitle>Social Links</CardTitle>
+              <CardDescription>
+                Connect your social media profiles
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="github"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>GitHub</FormLabel>
+                          <FormControl>
+                            <Input placeholder="https://github.com/username" {...field} value={field.value || ""} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  ) : (
-                    <div className="w-32 h-32 rounded-full bg-muted flex items-center justify-center">
-                      <User className="h-16 w-16 text-muted-foreground" />
-                    </div>
-                  )}
-                  <h3 className="text-xl font-bold mt-4">
-                    {formData.name || "Your Name"}
-                  </h3>
-                  <p className="text-muted-foreground">
-                    {formData.title || "Your Title"}
-                  </p>
-                </div>
 
-                <div className="space-y-2">
-                  <p className="text-sm text-card-foreground leading-relaxed">
-                    {formData.bio || "Your bio will appear here..."}
-                  </p>
-                </div>
+                    <FormField
+                      control={form.control}
+                      name="linkedin"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>LinkedIn</FormLabel>
+                          <FormControl>
+                            <Input placeholder="https://linkedin.com/in/username" {...field} value={field.value || ""} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm">Skills</h4>
-                  <div className="flex flex-wrap gap-1">
-                    {formData.skills.length > 0 ? (
-                      formData.skills.map((skill) => (
-                        <span
-                          key={skill}
-                          className="text-xs bg-muted px-2 py-1 rounded-full"
-                        >
-                          {skill}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-xs text-muted-foreground">
-                        No skills added yet
-                      </span>
-                    )}
+                    <FormField
+                      control={form.control}
+                      name="twitter"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Twitter</FormLabel>
+                          <FormControl>
+                            <Input placeholder="https://twitter.com/username" {...field} value={field.value || ""} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm">Contact</h4>
-                  <div className="space-y-1">
-                    {formData.email && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-card-foreground">
-                          {formData.email}
-                        </span>
-                      </div>
-                    )}
-                    {formData.github && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Github className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-card-foreground">GitHub</span>
-                      </div>
-                    )}
-                    {formData.twitter && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Twitter className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-card-foreground">Twitter</span>
-                      </div>
-                    )}
-                    {formData.linkedin && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Linkedin className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-card-foreground">LinkedIn</span>
-                      </div>
-                    )}
-                    {formData.resume && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-card-foreground">Resume</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+                  <Button type="submit" disabled={isSaving}>
+                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isSaving ? "Saving..." : "Save Changes"}
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

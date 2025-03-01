@@ -20,7 +20,7 @@ export default function HomePage() {
               {profile?.name || "Hi, I'm a Developer"}
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground mb-8">
-              {profile?.tagline ||
+              {profile?.title ||
                 "I build modern web applications with cutting-edge technologies."}
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
@@ -83,8 +83,19 @@ export default function HomePage() {
       <section className="py-16">
         <div className="container">
           <h2 className="text-3xl font-bold mb-10">Skills</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Add skill cards here */}
+          <div className="flex flex-wrap gap-2">
+            {profile?.skills && profile.skills.length > 0 ? (
+              profile.skills.map((skill) => (
+                <span
+                  key={skill}
+                  className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm"
+                >
+                  {skill}
+                </span>
+              ))
+            ) : (
+              <p className="text-muted-foreground">Skills coming soon...</p>
+            )}
           </div>
         </div>
       </section>
